@@ -1,66 +1,18 @@
 /**
- * ARIAE - Lógica Local (localStorage)
- * Manejo de pestañas, envío, rastreo de tickets y panel docente
+ * ARIAE - Lógica conectada a la Base de Datos en Supabase
  */
-
-// Datos de demostración iniciales (para probar el buscador y la tabla de entrada)
-const INITIAL_DEMO_TICKETS = [
-  {
-    id: "ticket_demo_1",
-    ticket_code: "ARIAE-ENG-8401",
-    title: "Pérdida de anclaje de la turbina al acercar la cámara",
-    device: "Samsung Galaxy S23",
-    os: "Android 14",
-    description: "Al aproximar la cámara a menos de 20 cm del marcador, el modelo pierde el tracking.",
-    reporter_name: "Prof. Carlos Mendoza",
-    reporter_email: "cmendoza@fpuna.edu.py",
-    status: "en_revision",
-    admin_reply: "Estamos calibrando el contraste en Vuforia para mejorar la estabilidad de proximidad.",
-    created_at: new Date(Date.now() - 86400000).toISOString()
-  },
-  {
-    id: "ticket_demo_2",
-    ticket_code: "ARIAE-ENG-8402",
-    title: "Caída de cuadros por segundo en animación de flujo",
-    device: "Xiaomi Redmi Note 12",
-    os: "Android 13",
-    description: "Se percibe lentitud al iniciar la simulación de partículas de combustión.",
-    reporter_name: "Sofía Valenzuela",
-    reporter_email: "svalenzuela@fpuna.edu.py",
-    status: "resuelto",
-    admin_reply: "Optimizado en la versión v1.2.0 del APK.",
-    created_at: new Date(Date.now() - 172800000).toISOString()
-  }
-];
-
-document.addEventListener('DOMContentLoaded', () => {
+(function() {
   'use strict';
 
-  const STORAGE_KEY = 'ariae_tickets_db';
-  let tickets = [];
+  // Inicializar cliente Supabase usando la configuración de config.js
+  const db = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+
   let activeTicketId = null;
+  let cachedBugs = [];
 
-  // 1. Inicializar almacenamiento local
-  function initStorage() {
-    const data = localStorage.getItem(STORAGE_KEY);
-    if (!data) {
-      tickets = [...INITIAL_DEMO_TICKETS];
-      saveTickets();
-    } else {
-      try {
-        tickets = JSON.parse(data);
-      } catch (e) {
-        tickets = [...INITIAL_DEMO_TICKETS];
-        saveTickets();
-      }
-    }
-  }
-
-  function saveTickets() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tickets));
-  }
-
-  // 2. Control de pestañas (Tabs)
+  // ==========================================
+  // 1. CONTROL DE PESTAÑAS (TABS)
+  // ==========================================
   const tabReport = document.getElementById('tabBtnReport');
   const tabTrack = document.getElementById('tabBtnTrack');
   const tabAdmin = document.getElementById('tabBtnAdmin');
@@ -85,23 +37,29 @@ document.addEventListener('DOMContentLoaded', () => {
       item.btn.classList.add('tab-button-active');
       item.pane.classList.add('pane-active');
 
-      // Si entra a la pestaña admin y ya está autenticado, refresca la tabla
+      // Si entra al panel docente y ya está desbloqueado, refresca
+      const adminWorkspace = document.getElementById('adminWorkspace');
       if (item.btn === tabAdmin && adminWorkspace && !adminWorkspace.classList.contains('admin-workspace-hidden')) {
-        renderAdminTable();
+        loadAdminReports();
       }
     });
   });
 
-  // 3. Formulario: Enviar nuevo reporte
+  // ==========================================
+  // 2. ENVÍO DE FORMULARIO A SUPABASE
+  // ==========================================
   const formBug = document.getElementById('formBug');
+  const btnSubmitBug = document.getElementById('btnSubmitBug');
+
   if (formBug) {
-    formBug.addEventListener('submit', (e) => {
+    formBug.addEventListener('submit', async (e) => {
       e.preventDefault();
+      btnSubmitBug.disabled = true;
+      btnSubmitBug.textContent = 'Enviando a la base de datos...';
 
       const ticketCode = `ARIAE-ENG-${Math.floor(1000 + Math.random() * 9000)}`;
 
       const newTicket = {
-        id: `ticket_${Date.now()}`,
         ticket_code: ticketCode,
         title: document.getElementById('inputTitle').value.trim(),
         device: document.getElementById('inputDevice').value.trim(),
@@ -109,20 +67,26 @@ document.addEventListener('DOMContentLoaded', () => {
         description: document.getElementById('inputDescription').value.trim(),
         reporter_name: document.getElementById('inputName').value.trim() || 'Anónimo',
         reporter_email: document.getElementById('inputEmail').value.trim(),
-        status: 'pendiente',
-        admin_reply: '',
-        created_at: new Date().toISOString()
+        status: 'pendiente'
       };
 
-      tickets.unshift(newTicket);
-      saveTickets();
+      const { error } = await db.from('tickets').insert([newTicket]);
 
-      alert(`¡Reporte registrado con éxito!\n\nTu Código de Seguimiento es: ${ticketCode}`);
-      formBug.reset();
+      if (error) {
+        alert('Error al registrar el reporte en la base de datos: ' + error.message);
+      } else {
+        alert(`¡Reporte guardado con éxito en la nube!\n\nTu Código de Seguimiento es: ${ticketCode}`);
+        formBug.reset();
+      }
+
+      btnSubmitBug.disabled = false;
+      btnSubmitBug.textContent = 'Enviar Reporte';
     });
   }
 
-  // 4. Rastrear Ticket por código
+  // ==========================================
+  // 3. CONSULTA DE TICKET EN TIEMPO REAL
+  // ==========================================
   const btnSearchTrack = document.getElementById('btnSearchTrack');
   const inputTrackCode = document.getElementById('inputTrackCode');
   const trackResultBox = document.getElementById('trackResultBox');
@@ -134,20 +98,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function performTrackSearch() {
-    const rawCode = inputTrackCode.value.trim().toUpperCase();
-    if (!rawCode) {
-      alert('Por favor introduce un código de ticket.');
-      return;
-    }
+  async function performTrackSearch() {
+    const code = inputTrackCode.value.trim().toUpperCase();
+    if (!code) return;
 
-    const data = tickets.find(t => t.ticket_code.toUpperCase() === rawCode);
+    btnSearchTrack.textContent = '...';
+    const { data, error } = await db.from('tickets').select('*').eq('ticket_code', code).single();
+    btnSearchTrack.textContent = 'Buscar';
 
-    if (!data) {
+    trackResultBox.classList.remove('hidden');
+
+    if (error || !data) {
       trackResultBox.innerHTML = `
         <div class="result-card-inner" style="border-color: #FECACA; background-color: #FEF2F2; color: #B91C1C; text-align: center;">
-          <strong>Ticket no encontrado (${rawCode})</strong>
-          <p style="font-size: 0.8rem; margin-top: 4px; color: #991B1B;">Verifica que el código coincida con el emitido al reportar (ej: ARIAE-ENG-8401).</p>
+          <strong>No se encontró ningún ticket con el código ${code}.</strong>
         </div>`;
       return;
     }
@@ -167,15 +131,17 @@ document.addEventListener('DOMContentLoaded', () => {
         <p style="font-size: 0.85rem; color: #334155; margin-top: 6px;">${data.description}</p>
         
         <div class="result-reply-box" style="margin-top: 10px;">
-          <strong style="display:block; margin-bottom: 4px; color: #1E3A8A;">Respuesta oficial del docente:</strong>
+          <strong style="display:block; margin-bottom: 4px; color: #1E3A8A;">Respuesta oficial del equipo docente:</strong>
           <p style="color: #475569; font-style: italic;">
-            ${data.admin_reply ? data.admin_reply : 'El caso aún no cuenta con respuesta técnica oficial.'}
+            ${data.admin_reply ? data.admin_reply : 'Tu caso aún está siendo revisado por los tutores.'}
           </p>
         </div>
       </div>`;
   }
 
-  // 5. Panel Docente (PIN & Gestión)
+  // ==========================================
+  // 4. PANEL DOCENTE / ADMINISTRADOR
+  // ==========================================
   const adminPinGate = document.getElementById('adminPinGate');
   const adminWorkspace = document.getElementById('adminWorkspace');
   const btnUnlockAdmin = document.getElementById('btnUnlockAdmin');
@@ -183,7 +149,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const adminPin = document.getElementById('adminPin');
   const tableBodyBugs = document.getElementById('tableBodyBugs');
   const btnReloadAdmin = document.getElementById('btnReloadAdmin');
-  const btnExportCsv = document.getElementById('btnExportCsv');
 
   if (btnUnlockAdmin && adminPin) {
     btnUnlockAdmin.addEventListener('click', handleAdminLogin);
@@ -194,17 +159,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function handleAdminLogin() {
     const pin = adminPin.value.trim().toLowerCase();
-    const validPins = (typeof CONFIG !== 'undefined' && CONFIG.ADMIN_PINS) 
-      ? CONFIG.ADMIN_PINS 
-      : ["ariae2026", "1234"];
+    const validPins = CONFIG.ADMIN_PINS || ["ariae2026", "1234"];
 
     if (validPins.includes(pin)) {
       adminPinGate.style.display = 'none';
       adminWorkspace.classList.remove('admin-workspace-hidden');
       adminWorkspace.style.display = 'block';
-      renderAdminTable();
+      loadAdminReports();
     } else {
-      alert('Clave incorrecta. Clave por defecto: 1234 o ariae2026');
+      alert('Clave incorrecta');
     }
   }
 
@@ -218,25 +181,32 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (btnReloadAdmin) {
-    btnReloadAdmin.addEventListener('click', () => {
-      initStorage();
-      renderAdminTable();
-    });
+    btnReloadAdmin.addEventListener('click', loadAdminReports);
   }
 
-  function renderAdminTable() {
+  async function loadAdminReports() {
     if (!tableBodyBugs) return;
+    tableBodyBugs.innerHTML = `<tr><td colspan="7" class="text-center" style="padding: 24px; color: #94A3B8;">Cargando reportes desde Supabase...</td></tr>`;
+    
+    const { data, error } = await db.from('tickets').select('*').order('created_at', { ascending: false });
 
-    if (!tickets.length) {
-      tableBodyBugs.innerHTML = `<tr><td colspan="7" class="text-center" style="padding: 24px; color: #94A3B8;">No hay reportes registrados aún.</td></tr>`;
+    if (error) {
+      tableBodyBugs.innerHTML = `<tr><td colspan="7" class="text-center" style="padding: 24px; color: #EF4444;">Error al cargar: ${error.message}</td></tr>`;
       return;
     }
 
-    tableBodyBugs.innerHTML = tickets.map(b => {
+    cachedBugs = data || [];
+
+    if (!cachedBugs.length) {
+      tableBodyBugs.innerHTML = `<tr><td colspan="7" class="text-center" style="padding: 24px; color: #94A3B8;">No hay tickets registrados en la nube todavía.</td></tr>`;
+      return;
+    }
+
+    tableBodyBugs.innerHTML = cachedBugs.map(b => {
       const badgeClass = b.status === 'resuelto' 
         ? 'status-resuelto' 
         : (b.status === 'en_revision' ? 'status-revision' : 'status-pendiente');
-      
+
       return `
         <tr>
           <td class="font-code ticket-tag">${b.ticket_code}</td>
@@ -253,21 +223,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }).join('');
 
     tableBodyBugs.querySelectorAll('.btn-manage').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = btn.getAttribute('data-id');
-        openInspectModal(id);
-      });
+      btn.addEventListener('click', () => openInspect(btn.getAttribute('data-id')));
     });
   }
 
-  // 6. Modal de Gestión
+  // ==========================================
+  // 5. MODAL DE GESTIÓN Y RESPUESTAS
+  // ==========================================
   const modalAdminInspect = document.getElementById('modalAdminInspect');
   const btnCloseInspect = document.getElementById('btnCloseInspect');
   const btnCancelInspect = document.getElementById('btnCancelInspect');
   const btnSaveInspect = document.getElementById('btnSaveInspect');
 
-  function openInspectModal(id) {
-    const bug = tickets.find(t => t.id === id);
+  function openInspect(id) {
+    const bug = cachedBugs.find(b => b.id === id);
     if (!bug || !modalAdminInspect) return;
 
     activeTicketId = id;
@@ -281,45 +250,54 @@ document.addEventListener('DOMContentLoaded', () => {
     modalAdminInspect.classList.remove('modal-hidden');
   }
 
-  function closeInspectModal() {
+  function closeInspect() {
     if (modalAdminInspect) modalAdminInspect.classList.add('modal-hidden');
     activeTicketId = null;
   }
 
-  if (btnCloseInspect) btnCloseInspect.onclick = closeInspectModal;
-  if (btnCancelInspect) btnCancelInspect.onclick = closeInspectModal;
+  if (btnCloseInspect) btnCloseInspect.onclick = closeInspect;
+  if (btnCancelInspect) btnCancelInspect.onclick = closeInspect;
 
   if (btnSaveInspect) {
-    btnSaveInspect.onclick = () => {
+    btnSaveInspect.onclick = async () => {
       if (!activeTicketId) return;
 
-      const idx = tickets.findIndex(t => t.id === activeTicketId);
-      if (idx !== -1) {
-        tickets[idx].status = document.getElementById('inspectStatus').value;
-        tickets[idx].admin_reply = document.getElementById('inspectReply').value.trim();
-        saveTickets();
-        closeInspectModal();
-        renderAdminTable();
-        alert('Ticket actualizado correctamente.');
+      btnSaveInspect.textContent = 'Guardando...';
+      const status = document.getElementById('inspectStatus').value;
+      const adminReply = document.getElementById('inspectReply').value.trim();
+
+      const { error } = await db.from('tickets').update({
+        status: status,
+        admin_reply: adminReply
+      }).eq('id', activeTicketId);
+
+      btnSaveInspect.textContent = 'Guardar Cambios';
+
+      if (error) {
+        alert('Error al guardar en Supabase: ' + error.message);
+      } else {
+        closeInspect();
+        loadAdminReports();
+        alert('¡Cambios guardados en la nube con éxito!');
       }
     };
   }
 
-  // 7. Exportación CSV
+  // ==========================================
+  // 6. EXPORTAR A CSV
+  // ==========================================
+  const btnExportCsv = document.getElementById('btnExportCsv');
   if (btnExportCsv) {
     btnExportCsv.onclick = () => {
-      if (!tickets.length) {
-        alert('No hay reportes para exportar.');
-        return;
-      }
+      if (!cachedBugs.length) return alert('No hay datos para exportar');
       const headers = ['Ticket', 'Titulo', 'Estado', 'Dispositivo', 'Remitente', 'Fecha', 'Respuesta'];
-      const rows = tickets.map(b => [
-        `"${b.ticket_code}"`,
-        `"${b.title.replace(/"/g, '""')}"`,
-        `"${b.status}"`,
-        `"${b.device}"`,
-        `"${(b.reporter_name || '').replace(/"/g, '""')}"`,
-        `"${b.created_at}"`,
+      const rows = cachedBugs.map(b => [
+        `"${b.ticket_code}"`, 
+        `"${b.title.replace(/"/g, '""')}"`, 
+        `"${b.status}"`, 
+        `"${b.device}"`, 
+        `"${(b.reporter_name || '').replace(/"/g, '""')}"`, 
+        `"${b.created_at}"`, 
         `"${(b.admin_reply || '').replace(/"/g, '""')}"`
       ]);
       const csv = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
@@ -331,6 +309,4 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // Inicialización
-  initStorage();
-});
+})();
