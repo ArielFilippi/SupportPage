@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <!-- Metadatos de Codificación y Visualización Responsive -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <!-- Optimización SEO / SAO -->
+    <title>Mesa de Ayuda y Soporte Técnico | ARIAE Motores Aeronáuticos</title>
+    <meta name="description"
+        content="Centro oficial de soporte técnico y reporte de fallas de la aplicación didáctica ARIAE. Registra y rastrea incidencias en simulaciones de motores aeronáuticos con Realidad Aumentada.">
+    <meta name="keywords"
+        content="ARIAE, soporte técnico, realidad aumentada, motores aeronáuticos, reporte de bugs, seguimiento de tickets, FP-UNA">
+    <meta name="author" content="ARIAE - FP-UNA">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://arielfilippi.github.io/Soporte/">
+
+    <!-- Metadatos Open Graph (Facebook / WhatsApp) -->
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="es_PY">
+    <meta property="og:title" content="Centro de Soporte Técnico | ARIAE">
+    <meta property="og:description"
+        content="Portal de seguimiento y reporte de incidencias para la aplicación educativa de motores aeronáuticos en Realidad Aumentada.">
+    <meta property="og:url" content="https://arielfilippi.github.io/Soporte/">
+    <meta property="og:site_name" content="ARIAE Soporte">
+
+    <!-- Metadatos Twitter Cards -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Centro de Soporte Técnico | ARIAE">
+    <meta name="twitter:description" content="Reporte y rastreo de incidencias técnicas en tiempo real de ARIAE.">
+
+    <!-- Datos Estructurados JSON-LD (Schema.org) -->
+    <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "name": "Centro de Soporte ARIAE",
+    "description": "Sistema de gestión y seguimiento de tickets de incidencias técnicas para ARIAE Motores Aeronáuticos.",
+    "publisher": {
+      "@type": "EducationalOrganization",
+      "name": "Facultad Politécnica, Universidad Nacional de Asunción"
+    }
+  }
+  </script>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%231E3A8A'/><path d='M25 65 L50 25 L75 65 L50 52 Z' fill='white'/></svg>">
+
+    <!-- Tipografías de Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Estilos CSS (Vincula a la carpeta css/styles.css) -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+
+    <!-- ============================================================== -->
+    <!-- HEADER: Barra Superior Institucional                           -->
+    <!-- ============================================================== -->
+    <header class="main-header" role="banner">
+        <div class="header-container">
+            <div class="brand-group">
+                <img src="img/logo.png" alt="ARIAE Logo" class="ariae-full-logo">
+                <span class="badge-status">Soporte Oficial</span>
+            </div>
+            <nav class="header-nav" aria-label="Información institucional">
+                <span class="institution-text">Facultad Politécnica (FP-UNA)</span>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ============================================================== -->
+    <!-- MAIN: Contenedor Principal Semántico                           -->
+    <!-- ============================================================== -->
+    <main class="main-content" role="main">
+
+        <!-- Hero / Título H1 -->
+        <section class="hero-section" aria-labelledby="main-heading">
+            <span class="hero-badge">Mesa de Ayuda &amp; Seguimiento Técnico</span>
+            <h1 id="main-heading" class="hero-title">Centro de Soporte Técnico</h1>
+        </section>
+
+        <!-- Navegación de Pestañas -->
+        <nav class="tabs-nav" aria-label="Secciones de soporte">
+            <button id="tabBtnReport" type="button" class="tab-button tab-button-active">Reportar Bug</button>
+            <button id="tabBtnTrack" type="button" class="tab-button">Rastrear Ticket</button>
+            <button id="tabBtnAdmin" type="button" class="tab-button tab-button-admin">Panel Docente</button>
+        </nav>
+
+        <!-- PESTAÑA 1: FORMULARIO DE REPORTE -->
+        <section id="paneReport" class="pane-content pane-active" aria-labelledby="report-heading">
+            <div class="card-box form-card">
+                <h2 id="report-heading" class="card-title">Registrar Incidencia</h2>
+                <p class="card-subtitle">Completa el formulario para que el equipo docente revise el comportamiento
+                    anómalo.</p>
+
+                <form id="formBug" class="support-form" novalidate>
+
+                    <div class="form-group">
+                        <label for="inputTitle" class="form-label">Título del problema <span
+                                class="required">*</span></label>
+                        <input type="text" id="inputTitle" name="title" required class="form-control"
+                            placeholder="Ej: Pérdida de tracking al enfocar turbofán">
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label for="inputDevice" class="form-label">Dispositivo Móvil <span
+                                    class="required">*</span></label>
+                            <input type="text" id="inputDevice" name="device" required class="form-control"
+                                placeholder="Ej: Samsung S23, Xiaomi 13">
+                        </div>
+                        <div class="form-group">
+                            <label for="inputOS" class="form-label">Versión de Android</label>
+                            <input type="text" id="inputOS" name="os" class="form-control" value="Android 13">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="inputDescription" class="form-label">Descripción Detallada <span
+                                class="required">*</span></label>
+                        <textarea id="inputDescription" name="description" rows="3" required class="form-control"
+                            placeholder="Describe con claridad lo sucedido durante la práctica..."></textarea>
+                    </div>
+
+                    <div class="form-divider">
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="inputName" class="form-label">Nombre del Remitente</label>
+                                <input type="text" id="inputName" name="name" class="form-control"
+                                    placeholder="Nombre y Apellido">
+                            </div>
+                            <div class="form-group">
+                                <label for="inputEmail" class="form-label">Correo Electrónico</label>
+                                <input type="email" id="inputEmail" name="email" class="form-control"
+                                    placeholder="alumno@fpuna.edu.py">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btnSubmitBug" class="btn btn-primary btn-block">Enviar Reporte</button>
+
+                </form>
+            </div>
+        </section>
+
+        <!-- PESTAÑA 2: RASTREAR TICKET -->
+        <section id="paneTrack" class="pane-content" aria-labelledby="track-heading">
+            <div class="card-box track-card">
+                <h2 id="track-heading" class="card-title text-center">Consultar Estado de Incidencia</h2>
+                <p class="card-subtitle text-center">Ingresa tu código único para verificar si tu reporte ha sido
+                    evaluado.</p>
+
+                <div class="search-bar-group">
+                    <label for="inputTrackCode" class="sr-only">Código de Ticket</label>
+                    <input type="text" id="inputTrackCode" class="form-control font-code input-uppercase"
+                        placeholder="Ej: ARIAE-ENG-8401">
+                    <button id="btnSearchTrack" type="button" class="btn btn-primary">Buscar</button>
+                </div>
+
+                <div id="trackResultBox" class="result-box-container" aria-live="polite"></div>
+            </div>
+        </section>
+
+        <!-- PESTAÑA 3: PANEL DOCENTE -->
+        <section id="paneAdmin" class="pane-content" aria-labelledby="admin-heading">
+
+            <!-- Barrera PIN -->
+            <div id="adminPinGate" class="card-box pin-gate-card">
+                <div class="lock-icon" aria-hidden="true">🔒</div>
+                <h2 id="admin-heading" class="card-title">Acceso Docente</h2>
+                <p class="card-subtitle">Introduce la clave autorizada para gestionar las incidencias recibidas.</p>
+
+                <div class="pin-input-group">
+                    <label for="adminPin" class="sr-only">Clave Docente</label>
+                    <input type="password" id="adminPin" class="form-control text-center font-code" placeholder="PIN">
+                    <button id="btnUnlockAdmin" type="button" class="btn btn-primary">Ingresar</button>
+                </div>
+            </div>
+
+            <!-- Bandeja de Entrada -->
+            <div id="adminWorkspace" class="admin-workspace-hidden">
+
+                <div class="admin-topbar">
+                    <span class="active-session-indicator">
+                        <span class="pulse-dot"></span>
+                        Sesión Docente Activa
+                    </span>
+                    <div class="admin-actions">
+                        <button id="btnReloadAdmin" type="button" class="btn btn-secondary btn-sm">Actualizar</button>
+                        <button id="btnExportCsv" type="button" class="btn btn-secondary btn-sm">Exportar CSV</button>
+                        <button id="btnLockAdmin" type="button" class="btn btn-danger btn-sm">Cerrar Sesión</button>
+                    </div>
+                </div>
+
+                <!-- Tabla de Registros -->
+                <div class="table-container">
+                    <table class="data-table">
+                        <caption class="sr-only">Listado de reportes de bugs enviados</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Ticket</th>
+                                <th scope="col">Estado</th>
+                                <th scope="col">Problema</th>
+                                <th scope="col">Dispositivo</th>
+                                <th scope="col">Remitente</th>
+                                <th scope="col">Fecha</th>
+                                <th scope="col" class="text-right">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBodyBugs"></tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- ============================================================== -->
+    <!-- MODAL: Inspección y Gestión de Ticket (Admin)                  -->
+    <!-- ============================================================== -->
+    <aside id="modalAdminInspect" class="modal-overlay modal-hidden" aria-modal="true" role="dialog">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div>
+                    <span id="inspectCode" class="ticket-tag font-code"></span>
+                    <h3 id="inspectTitle" class="modal-title"></h3>
+                </div>
+                <button id="btnCloseInspect" type="button" class="btn-close" aria-label="Cerrar modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <p><strong>Descripción:</strong> <span id="inspectDesc"></span></p>
+                <p><strong>Dispositivo:</strong> <span id="inspectDevice"></span></p>
+            </div>
+
+            <div class="modal-edit-section">
+                <div class="form-group">
+                    <label for="inspectStatus" class="form-label">Actualizar Estado:</label>
+                    <select id="inspectStatus" class="form-control">
+                        <option value="pendiente">Pendiente</option>
+                        <option value="en_revision">En Revisión</option>
+                        <option value="resuelto">Resuelto</option>
+                        <option value="descartado">Descartado</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="inspectReply" class="form-label">Respuesta Oficial:</label>
+                    <textarea id="inspectReply" rows="2" class="form-control"
+                        placeholder="Escribe la respuesta técnica oficial..."></textarea>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button id="btnCancelInspect" type="button" class="btn btn-secondary">Cancelar</button>
+                <button id="btnSaveInspect" type="button" class="btn btn-primary">Guardar Cambios</button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ============================================================== -->
+    <!-- FOOTER: Pie de Página                                          -->
+    <!-- ============================================================== -->
+    <footer class="main-footer" role="contentinfo">
+        <div class="footer-container">
+            <p>&copy; 2026 ARIAE &bull; Proyecto de Investigación Didáctica con Realidad Aumentada</p>
+            <p class="footer-institution">Facultad Politécnica &bull; Universidad Nacional de Asunción (FP-UNA)</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
