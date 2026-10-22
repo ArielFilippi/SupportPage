@@ -104,7 +104,7 @@
                 <p class="card-subtitle">Completa el formulario para que el equipo docente revise el comportamiento
                     anómalo.</p>
 
-                <form id="formBug" class="support-form" novalidate>
+                <form id="formBug" class="support-form">
 
                     <div class="form-group">
                         <label for="inputTitle" class="form-label">Título del problema <span
@@ -175,15 +175,19 @@
         <!-- PESTAÑA 3: PANEL DOCENTE -->
         <section id="paneAdmin" class="pane-content" aria-labelledby="admin-heading">
 
-            <!-- Barrera PIN -->
+            <!-- Acceso docente con Supabase Auth -->
             <div id="adminPinGate" class="card-box pin-gate-card">
                 <div class="lock-icon" aria-hidden="true">🔒</div>
                 <h2 id="admin-heading" class="card-title">Acceso Docente</h2>
-                <p class="card-subtitle">Introduce la clave autorizada para gestionar las incidencias recibidas.</p>
+                <p class="card-subtitle">Inicia sesión con tu cuenta docente autorizada.</p>
 
-                <div class="pin-input-group">
-                    <label for="adminPin" class="sr-only">Clave Docente</label>
-                    <input type="password" id="adminPin" class="form-control text-center font-code" placeholder="PIN">
+                <div class="admin-login-form">
+                    <label for="adminEmail" class="sr-only">Correo docente</label>
+                    <input type="email" id="adminEmail" class="form-control" placeholder="docente@fpuna.edu.py" autocomplete="username">
+
+                    <label for="adminPassword" class="sr-only">Contraseña</label>
+                    <input type="password" id="adminPassword" class="form-control" placeholder="Contraseña" autocomplete="current-password">
+
                     <button id="btnUnlockAdmin" type="button" class="btn btn-primary">Ingresar</button>
                 </div>
             </div>

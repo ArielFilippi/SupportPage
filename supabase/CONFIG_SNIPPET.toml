@@ -1,0 +1,8 @@
+# Agregá estos bloques al supabase/config.toml creado por `supabase init`.
+# @supabase/server validará la publishable key dentro de la función.
+
+[functions.create-ticket]
+verify_jwt = false
+
+[functions.track-ticket]
+verify_jwt = false

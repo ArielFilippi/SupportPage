@@ -391,3 +391,10 @@
 @media (min-width: 768px) {
   .tab-button { width: auto; }
 }
+/* Login docente con Supabase Auth */
+.admin-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.admin-login-form .btn { width: 100%; }
