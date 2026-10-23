@@ -398,3 +398,17 @@
   gap: 10px;
 }
 .admin-login-form .btn { width: 100%; }
+
+
+.status-descartado {
+  background-color: #F1F5F9;
+  color: #475569;
+}
+
+.admin-login-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: left;
+}
+

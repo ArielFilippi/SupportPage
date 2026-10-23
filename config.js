@@ -1,6 +1,6 @@
 /**
- * ARIAE - Configuración pública del frontend.
- * Esta publishable key está diseñada para usarse en el navegador.
+ * ARIAE - Configuración pública de Supabase
+ * Esta publishable key puede estar en el navegador.
  */
 const CONFIG = {
   SUPABASE_URL: "https://oolfimhadjkavwegdfiz.supabase.co",
